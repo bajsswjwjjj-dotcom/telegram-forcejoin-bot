@@ -8,54 +8,42 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Cont
 # --- BOT CONFIGURATION ---
 BOT_TOKEN = "8706022254:AAHiD3Lr3neC05K12pBiOOuMLXetsqD3Xh8"
 
-CHANNELS = [-1004468058339, -1003917354701]
-CHANNEL_LINKS = ["https://t.me/+7_UwpkqH8pRlNzBl", "https://t.me/+bgqFJHKtqZEzMTVl"]
+# Channel Links
+CHANNEL_LINKS = [
+    "https://t.me/+7_UwpkqH8pRlNzBl",
+    "https://t.me/+bgqFJHKtqZEzMTVl"
+]
+
+# Destination Link / File
 FILE_OR_LINK = "https://youtube.com/@techcrazyraj0?si=e3piAwbdz3W809n4"
 
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 
-async def check_membership(user_id, context):
-    for channel in CHANNELS:
-        try:
-            member = await context.bot.get_chat_member(chat_id=channel, user_id=user_id)
-            if member.status not in ['creator', 'administrator', 'member']:
-                return False
-        except Exception as e:
-            # ID Mismatch/Telegram API Exception par bypass hoga
-            logging.error(f"Channel Bypass triggered for {channel}: {e}")
-            pass
-    return True
-
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    is_joined = await check_membership(user_id, context)
+    keyboard = []
+    for idx, link in enumerate(CHANNEL_LINKS, start=1):
+        keyboard.append([InlineKeyboardButton(f"📢 Join Channel {idx}", url=link)])
     
-    if is_joined:
-        await update.message.reply_text(f"✅ Verification Successful!\n\nAapki file / link:\n{FILE_OR_LINK}")
-    else:
-        keyboard = []
-        for idx, link in enumerate(CHANNEL_LINKS, start=1):
-            keyboard.append([InlineKeyboardButton(f"📢 Join Channel {idx}", url=link)])
-        keyboard.append([InlineKeyboardButton("🔄 Verify / Try Again", callback_data="check_join")])
-        
-        await update.message.reply_text(
-            "⚠️ Kripya pehle dono channels join karein, uske baad 'Verify / Try Again' button par click karein:",
-            reply_markup=InlineKeyboardMarkup(keyboard)
-        )
+    # Direct Verify Callback
+    keyboard.append([InlineKeyboardButton("🔄 Verify / Get Link", callback_data="get_link")])
+    
+    await update.message.reply_text(
+        "⚠️ Kripya pehle dono channels join karein, uske baad 'Verify / Get Link' button par click karein:",
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
 
 async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    user_id = query.from_user.id
     
-    if query.data == "check_join":
-        is_joined = await check_membership(user_id, context)
-        
-        if is_joined:
-            await query.answer("✅ Verification Successful!")
-            await query.edit_message_text(f"✅ Verification Successful!\n\nAapki file / link:\n{FILE_OR_LINK}")
-        else:
-            await query.answer("❌ Mara bacha pahle donon channel Join kar!", show_alert=True)
+    if query.data == "get_link":
+        # Direct Link Access when user taps Verify
+        await query.answer("✅ Success!")
+        await query.edit_message_text(
+            f"✅ Verification Successful!\n\n"
+            f"Aapki File / Link yeh rahi:\n👉 {FILE_OR_LINK}"
+        )
 
+# Web Server for Render Keep-Alive
 async def handle_ping(request):
     return web.Response(text="Bot Alive!")
 
