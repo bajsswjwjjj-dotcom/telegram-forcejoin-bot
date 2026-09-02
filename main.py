@@ -8,11 +8,11 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Cont
 # --- BOT CONFIGURATION ---
 BOT_TOKEN = "8706022254:AAHiD3Lr3neC05K12pBiOOuMLXetsqD3Xh8"
 
-# Channel IDs (-100 ke saath exact numeric IDs)
+# Step 1 se mili sahi IDs ko yahan replace karein (e.g. -100xxxxxxxxxx)
 CHANNELS = [-1004468058339, -1003917354701]
 CHANNEL_LINKS = ["https://t.me/+7_UwpkqH8pRlNzBl", "https://t.me/+bgqFJHKtqZEzMTVl"]
 
-# Aapki File / Target URL
+# Target File Link
 FILE_OR_LINK = "https://youtube.com/@techcrazyraj0?si=e3piAwbdz3W809n4"
 
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
@@ -22,16 +22,16 @@ async def check_membership(user_id, context):
         try:
             member = await context.bot.get_chat_member(chat_id=channel, user_id=user_id)
             if member.status not in ['creator', 'administrator', 'member']:
-                return False, f"Channel {channel} join nahi kiya."
+                return False
         except Exception as e:
-            logging.error(f"Error checking membership for {channel}: {e}")
-            # Bot channel me admin na hone par fallback check bypass karega
-            return True, "OK"
-    return True, "OK"
+            # Agar ID mismatch ya koi Telegram error aaye toh bypass karke pass hone dega
+            logging.error(f"Channel Check Bypass due to error in {channel}: {e}")
+            pass
+    return True
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
-    is_joined, _ = await check_membership(user_id, context)
+    is_joined = await check_membership(user_id, context)
     
     if is_joined:
         await update.message.reply_text(f"✅ Verification Successful!\n\nAapki File / Link:\n{FILE_OR_LINK}")
@@ -51,15 +51,15 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = query.from_user.id
     
     if query.data == "check_join":
-        is_joined, reason = await check_membership(user_id, context)
+        is_joined = await check_membership(user_id, context)
         
         if is_joined:
             await query.answer("✅ Verification Successful!")
             await query.edit_message_text(f"✅ Verification Successful!\n\nAapki File / Link:\n{FILE_OR_LINK}")
         else:
-            await query.answer("❌ Aapne dono channels abhi join nahi kiye hain! Pehle join karein.", show_alert=True)
+            await query.answer("❌ Verification Failed! Pehle dono channels join karein.", show_alert=True)
 
-# Fake Web Server for Render Port Check
+# Fake Web Server for Render
 async def handle_ping(request):
     return web.Response(text="Bot Alive!")
 
@@ -82,7 +82,7 @@ async def main():
     await app.start()
     await app.updater.start_polling(drop_pending_updates=True)
     
-    print(">>> BOT IS LIVE AND WORKING <<<")
+    print(">>> BOT IS LIVE <<<")
     await asyncio.Event().wait()
 
 if __name__ == '__main__':
