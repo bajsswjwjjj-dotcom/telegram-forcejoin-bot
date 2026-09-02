@@ -8,11 +8,8 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Cont
 # --- BOT CONFIGURATION ---
 BOT_TOKEN = "8706022254:AAHiD3Lr3neC05K12pBiOOuMLXetsqD3Xh8"
 
-# Step 1 se mili sahi IDs ko yahan replace karein (e.g. -100xxxxxxxxxx)
 CHANNELS = [-1004468058339, -1003917354701]
 CHANNEL_LINKS = ["https://t.me/+7_UwpkqH8pRlNzBl", "https://t.me/+bgqFJHKtqZEzMTVl"]
-
-# Target File Link
 FILE_OR_LINK = "https://youtube.com/@techcrazyraj0?si=e3piAwbdz3W809n4"
 
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
@@ -24,8 +21,8 @@ async def check_membership(user_id, context):
             if member.status not in ['creator', 'administrator', 'member']:
                 return False
         except Exception as e:
-            # Agar ID mismatch ya koi Telegram error aaye toh bypass karke pass hone dega
-            logging.error(f"Channel Check Bypass due to error in {channel}: {e}")
+            # ID Mismatch/Telegram API Exception par bypass hoga
+            logging.error(f"Channel Bypass triggered for {channel}: {e}")
             pass
     return True
 
@@ -34,7 +31,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     is_joined = await check_membership(user_id, context)
     
     if is_joined:
-        await update.message.reply_text(f"✅ Verification Successful!\n\nAapki File / Link:\n{FILE_OR_LINK}")
+        await update.message.reply_text(f"✅ Verification Successful!\n\nAapki file / link:\n{FILE_OR_LINK}")
     else:
         keyboard = []
         for idx, link in enumerate(CHANNEL_LINKS, start=1):
@@ -55,11 +52,10 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         if is_joined:
             await query.answer("✅ Verification Successful!")
-            await query.edit_message_text(f"✅ Verification Successful!\n\nAapki File / Link:\n{FILE_OR_LINK}")
+            await query.edit_message_text(f"✅ Verification Successful!\n\nAapki file / link:\n{FILE_OR_LINK}")
         else:
-            await query.answer("❌ Verification Failed! Pehle dono channels join karein.", show_alert=True)
+            await query.answer("❌ Mara bacha pahle donon channel Join kar!", show_alert=True)
 
-# Fake Web Server for Render
 async def handle_ping(request):
     return web.Response(text="Bot Alive!")
 
