@@ -1,21 +1,9 @@
 import os
 import logging
-from http.server import HTTPServer, BaseHTTPRequestHandler
-import threading
+import asyncio
+from aiohttp import web
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
-
-# --- FAKE WEB SERVER FOR RENDER PORT CHECK ---
-class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.write(b"Bot is Running Alive!")
-
-def run_web_server():
-    port = int(os.environ.get("PORT", 8080))
-    server = HTTPServer(('0.0.0.0', port), SimpleHTTPRequestHandler)
-    server.serve_forever()
 
 # --- BOT CONFIGURATION ---
 BOT_TOKEN = "8706022254:AAHiD3Lr3neC05K12pBiOOuMLXetsqD3Xh8"
@@ -67,16 +55,41 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             await query.answer("❌ Aapne dono channels join nahi kiye hain!", show_alert=True)
 
-def main():
-    # Start web server in background thread for Render
-    threading.Thread(target=run_web_server, daemon=True).start()
-    
+# Fake web handler for Render port check
+async def handle_ping(request):
+    return web.Response(text="Bot is running perfectly!")
+
+async def main():
+    # Build Telegram Application
     app = Application.builder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_callback))
+
+    # Setup web server
+    web_app = web.Application()
+    web_app.router.add_get('/', handle_ping)
+    web_app.router.add_head('/', handle_ping)
     
-    print(">>> BOT IS LIVE <<<")
-    app.run_polling(drop_pending_updates=True)
+    runner = web.AppRunner(web_app)
+    await runner.setup()
+    
+    port = int(os.environ.get("PORT", 8080))
+    site = web.TCPSite(runner, '0.0.0.0', port)
+    await site.start()
+
+    # Initialize and start telegram bot polling
+    await app.initialize()
+    await app.start()
+    await app.updater.start_polling(drop_pending_updates=True)
+    
+    print(">>> BOT IS LIVE AND STABLE <<<")
+
+    # Keep app running indefinitely
+    await asyncio.Event().wait()
 
 if __name__ == '__main__':
-    main()
+    try:
+        asyncio.run(main())
+    except (KeyboardInterrupt, SystemExit):
+        pass
+        
