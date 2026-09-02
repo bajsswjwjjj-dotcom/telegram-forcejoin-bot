@@ -8,8 +8,11 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Cont
 # --- BOT CONFIGURATION ---
 BOT_TOKEN = "8706022254:AAHiD3Lr3neC05K12pBiOOuMLXetsqD3Xh8"
 
+# Channel IDs (-100 ke saath exact numeric IDs)
 CHANNELS = [-1004468058339, -1003917354701]
 CHANNEL_LINKS = ["https://t.me/+7_UwpkqH8pRlNzBl", "https://t.me/+bgqFJHKtqZEzMTVl"]
+
+# Aapki File / Target URL
 FILE_OR_LINK = "https://youtube.com/@techcrazyraj0?si=e3piAwbdz3W809n4"
 
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
@@ -19,18 +22,19 @@ async def check_membership(user_id, context):
         try:
             member = await context.bot.get_chat_member(chat_id=channel, user_id=user_id)
             if member.status not in ['creator', 'administrator', 'member']:
-                return False
+                return False, f"Channel {channel} join nahi kiya."
         except Exception as e:
-            logging.error(f"Error channel {channel}: {e}")
-            return False
-    return True
+            logging.error(f"Error checking membership for {channel}: {e}")
+            # Bot channel me admin na hone par fallback check bypass karega
+            return True, "OK"
+    return True, "OK"
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
-    is_joined = await check_membership(user_id, context)
+    is_joined, _ = await check_membership(user_id, context)
     
     if is_joined:
-        await update.message.reply_text(f"✅ Verification Successful!\n\nLink:\n{FILE_OR_LINK}")
+        await update.message.reply_text(f"✅ Verification Successful!\n\nAapki File / Link:\n{FILE_OR_LINK}")
     else:
         keyboard = []
         for idx, link in enumerate(CHANNEL_LINKS, start=1):
@@ -38,34 +42,32 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         keyboard.append([InlineKeyboardButton("🔄 Verify / Try Again", callback_data="check_join")])
         
         await update.message.reply_text(
-            "⚠️ Kripya pehle niche diye gaye dono channels join karein:",
+            "⚠️ Kripya pehle dono channels join karein, uske baad 'Verify / Try Again' button par click karein:",
             reply_markup=InlineKeyboardMarkup(keyboard)
         )
 
 async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    await query.answer()
+    user_id = query.from_user.id
     
     if query.data == "check_join":
-        user_id = query.from_user.id
-        is_joined = await check_membership(user_id, context)
+        is_joined, reason = await check_membership(user_id, context)
         
         if is_joined:
-            await query.edit_message_text(f"✅ Verification Successful!\n\nLink:\n{FILE_OR_LINK}")
+            await query.answer("✅ Verification Successful!")
+            await query.edit_message_text(f"✅ Verification Successful!\n\nAapki File / Link:\n{FILE_OR_LINK}")
         else:
-            await query.answer("❌ Aapne dono channels join nahi kiye hain!", show_alert=True)
+            await query.answer("❌ Aapne dono channels abhi join nahi kiye hain! Pehle join karein.", show_alert=True)
 
-# Fake web handler for Render port check
+# Fake Web Server for Render Port Check
 async def handle_ping(request):
-    return web.Response(text="Bot is running perfectly!")
+    return web.Response(text="Bot Alive!")
 
 async def main():
-    # Build Telegram Application
     app = Application.builder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_callback))
 
-    # Setup web server
     web_app = web.Application()
     web_app.router.add_get('/', handle_ping)
     
@@ -76,14 +78,11 @@ async def main():
     site = web.TCPSite(runner, '0.0.0.0', port)
     await site.start()
 
-    # Initialize and start telegram bot polling
     await app.initialize()
     await app.start()
     await app.updater.start_polling(drop_pending_updates=True)
     
-    print(">>> BOT IS LIVE AND STABLE <<<")
-
-    # Keep app running indefinitely
+    print(">>> BOT IS LIVE AND WORKING <<<")
     await asyncio.Event().wait()
 
 if __name__ == '__main__':
@@ -91,3 +90,4 @@ if __name__ == '__main__':
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         pass
+        
