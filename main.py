@@ -68,7 +68,6 @@ async def main():
     # Setup web server
     web_app = web.Application()
     web_app.router.add_get('/', handle_ping)
-    web_app.router.add_head('/', handle_ping)
     
     runner = web.AppRunner(web_app)
     await runner.setup()
@@ -92,4 +91,3 @@ if __name__ == '__main__':
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         pass
-        
