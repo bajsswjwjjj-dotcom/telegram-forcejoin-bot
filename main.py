@@ -15,8 +15,7 @@ CHANNEL_LINKS = [
 ]
 
 # Destination Link / File
-FILE_OR_LINK = "<a href="https://www.youtube.com/results?search_query=Tech+Crazy+Raj" target="_blank">YouTube par Search Karein</a>
-"
+FILE_OR_LINK = "<a href="https://www.youtube.com/results?search_query=Tech+Crazy+raj
 
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 
