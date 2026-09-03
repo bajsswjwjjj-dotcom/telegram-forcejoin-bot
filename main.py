@@ -15,7 +15,7 @@ CHANNEL_LINKS = [
 ]
 
 # Destination Link / File
-FILE_OR_LINK = "https://youtu.be/ZapyYgl9WVM?si=es8mEDgXmdXh9mEI"
+FILE_OR_LINK = "https://www.youtube.com/live/OChxZeq0HUo?si=8e53zv2TbX9nYTly"
 
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 
