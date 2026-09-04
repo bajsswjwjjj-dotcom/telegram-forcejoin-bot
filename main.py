@@ -15,7 +15,7 @@ CHANNEL_LINKS = [
 ]
 
 # Destination Link / File
-FILE_OR_LINK = "<a href="https://www.youtube.com/live/OChxZeq0HUo?si=PFPTTXSOb6IN4AaS"
+FILE_OR_LINK = "<a href="https://vplink.in/F2Uv"
 
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 
