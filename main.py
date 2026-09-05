@@ -6,7 +6,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 
 # --- BOT CONFIGURATION ---
-BOT_TOKEN = "8999904390:AAHc3g6bTWSLkTAVY_YF1pyUsGM5PNdOVoU"
+BOT_TOKEN = "8999904390:AAH65loAd0u2RcYQMxzNWbf7yL5QghIOt44"
 
 # Channel Links
 CHANNEL_LINKS = [
